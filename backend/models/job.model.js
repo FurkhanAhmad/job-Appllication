@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-const jobSchema = new mongoose.jobSchema({
+const jobSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
   },
   description: {
     type: String,
-    required,
+    required:true
   },
   requirements: [
     {
@@ -16,6 +16,10 @@ const jobSchema = new mongoose.jobSchema({
   salary: {
     type: Number,
     required: true,
+  },
+  experienceLevel:{
+   type:Number,
+   required:true
   },
   location: {
     type: String,
@@ -29,12 +33,12 @@ const jobSchema = new mongoose.jobSchema({
     type:Number,
     required:true
   },
-  company:{
+ company:{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Company',
     required:true
   },
-  created_by:{
+  created_by:{ //This is For Admin(recuiter)
     type:mongoose.Schema.Types.ObjectId,
     ref:'User',
     required:true
@@ -48,3 +52,6 @@ const jobSchema = new mongoose.jobSchema({
 
 },{timestamps:true});
 export const Job=mongoose.model('Job',jobSchema)
+
+
+

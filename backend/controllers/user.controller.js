@@ -48,57 +48,7 @@ export const register = async (req, res) => {
   }
 };
 
-// export const login=async(req,res)=>{
-       
-//        try{
-//           const {email,password,role}=req.body;
-//           if(!email || !password || !role){
-//             return res.status(400).json({
-//                 message:"Something went wrong"
-//             })
-//           }
-//           let user=await User.findOne({email});
-//           if(!user){
-//             return res.status(400).json({
-//                 message:"Incorrect Email or Password",
-//                 success:false
-//             })
-//           }
-//           const isPassword=await bcrypt.compare(password,user.password)
-//           if(!isPassword){
-//             return res.status(400).json({
-//                 message:"Incorrect email or password"
-//             })
-//           }
-//           //check role is correct or not
 
-//           if(role !==user.role){
-//             return res.status(400).json({
-//                 message:"Account doesn't exist with current role."
-//             })
-//           };
-
-//           const tokenData={
-//             userId:user._id
-//           }
-//           const token=await jwt.sign(tokenData,process.env.SECRET_KEY,{expiresIn:'1d'});
-//           user={
-//             _id:user._id,
-//             fullname:user.fullname,
-//             email:user.email,
-//             phoneNumber:user.phoneNumber,
-//             role:user.role,
-//             profile:user.profile
-//           }
-//           return res.status(200).cookie("token",token,{maxAge:1*24*60*60*1000,httpOnly:true,sameSite:'strict'}).json({
-//             message:`Welcome back ${user.fullname}`,
-//             user,
-//             success:true
-//           })
-//        }catch(error){
-//        console.log(error)
-//        }
-// }
 
 
 export const login = async (req, res) => {
@@ -186,51 +136,57 @@ export const logout=async(req,res)=>{
     }
 }
 
-export const updateProfile=async(req,res)=>{
-    try{
-        const {fullname,email,phoneNumber,bio,skills}=req.body;
-    
-         if(!fullname || !email || !phoneNumber || !bio || !skills){
-            return res.status(400).json({
-        message:"All Fields Are Required",
-        success:false
-        })
-    };
-    const skillssArray=skills.split(",");
-        const userId=req.id //middleware authentication
-        let user=await User.findById(userId);
-        if(!user){
-            return res.status(400).json({
-                message:"User not found.",
-                success:false
-            })
-        }
-        //Updating Data
-        user.fullname=fullname,
-        user.email=email,
-        user.phoneNumber=phoneNumber,
-        user.profile.bio=bio,
-        user.profile.skills=skillssArray
+export const updateProfile = async (req, res) => {
+  try {
+    const { fullname, email, phoneNumber, bio, skills } = req.body;
 
-        //Resume comess Lellter Here.....
-        await user.save();
-         user={
-            _id:user._id,
-            fullname:user.fullname,
-            email:user.email,
-            phoneNumber:user.phoneNumber,
-            role:user.role,
-            profile:user.profile
-          }
-          return res.status(200).json({
-            message:"Profile updated successfully.",
-            user,
-            success:true
-          })
-    } catch(error){
-        console.Console(error);
+    let skillsArray;
+    if (skills) {
+      skillsArray = skills.split(",").map(skill => skill.trim()).filter(Boolean);
     }
-}
+
+    const userId = req.id; // from middleware authentication
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+
+    // Update fields if provided
+    if (fullname) user.fullname = fullname;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (bio) user.profile.bio = bio;
+    if (skillsArray) user.profile.skills = skillsArray;
+
+    await user.save();
+
+    // Return updated user (exclude sensitive fields like password)
+    const updatedUser = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      profile: user.profile,
+    };
+
+    return res.status(200).json({
+      message: "Profile updated successfully.",
+      user: updatedUser,
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Server error while updating profile.",
+      success: false,
+    });
+  }
+};
 
 
 
